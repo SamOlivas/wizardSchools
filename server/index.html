@@ -1,0 +1,222 @@
+<html>
+  <head>
+<style>
+  #body{
+    background-color: slategrey;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+  }
+  #NavBar{
+    background-color: lightgrey;
+    border-radius: 15px
+  }
+  .center{
+  }
+  .spread{
+    display:flex;
+    justify-content: space-around
+  }
+  .studentTile{
+    display: flex;
+    align-content: space-around;
+    flex-direction: column
+  }
+  #EnrollStudent{
+    display: flex;
+    align-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+    background-color: lightgrey;
+    border-radius: 15px
+  }
+</style>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.0.0/react-router-dom.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/react-redux/7.1.0/react-redux.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/redux-thunk/2.3.0/redux-thunk.js'></script>
+  </head>
+  <body id='body'>
+    <div id='root'></div>
+    <script type='text/babel'>
+      const { HashRouter, NavLink, Route } = ReactRouterDOM;
+      const { Provider, connect} = ReactRedux;
+
+
+//REACT BELOW
+      class App extends React.Component {
+        constructor(){
+          super()
+        };
+        componentDidMount(){
+          this.props.getStudents()
+          this.props.getSchools()
+        };
+        componentWillUnmount(){
+        };
+        render() {
+          return(
+              <HashRouter>
+                <h1>Acme Schools</h1>
+                <Nav/>
+                <br/>
+                <Route exact path='/' component={Home}/>
+                <Route path='/schools' component={Schools}/>
+                <Route path='/students' component={_Students} />
+              </HashRouter>
+          )
+        }
+      };
+      const _App = connect(
+        null,
+        (dispatch)=> ({
+          getStudents: () => dispatch(getStudents()),
+          getSchools: () => dispatch(getSchools())
+        })
+      )(App)
+
+      const Nav = () => {
+        return(
+          <div id='NavBar'>
+            <div className='spread' >
+              <NavLink to='/'>Home</NavLink>
+              <NavLink to='/schools'>Schools</NavLink>
+              <NavLink to='/students'>Students</NavLink>
+            </div>
+          </div>
+        )
+      };
+      const Home = () => {
+        return(
+          <div>
+            <h2>Home Page</h2>
+            <div>Most Popular School</div>
+            <div>Highest Performing School</div>
+          </div>
+        )
+      };
+
+      const Schools = () => {
+        return(
+          <div>
+            <div className='spread'>
+              <img src='https://vignette.wikia.nocookie.net/memoryalpha/images/1/18/Starfleet_Academy_logo_2368.png/revision/latest?cb=20060912110311&path-prefix=en' height='150'/>
+              <img src='https://cdn-payscale.com/content/school_logos/Pratt%20Institute_200px.png' height='150'/>
+              <img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_pMw9Sru_aQUy2Rg8tdh_NjSaeW1aBVYxcU0earWX17MPuhNU' height='150'/>
+            </div>
+          </div>
+        )
+      }
+      class Students extends React.Component{
+        constructor(props){
+          super(props)
+          this.state = {
+            firstName:'',
+            lastName: '',
+            email:'',
+            GPA:'',
+            schoolId:''
+          }
+          this.handleChange=this.handleChange.bind(this)
+          this.handleSubmit=this.handleSubmit.bind(this)
+          this.handleSelect=this.handleSelect.bind(this)
+          this.handleSelect=this.handleSelect.bind(this)
+        };
+
+        handleChange(ev) {
+          this.state[ev.target.id] = ev.target.value
+        };
+        async handleSubmit(ev) {
+          ev.preventDefault()
+          const res = await axios.post('/api/students/', this.state)
+
+          //console.log(this.props)
+          //console.log(this.state)
+        };
+        handleSelect(ev) {
+          this.state.singleStudent = ev.target.key
+          console.log(ev.target.key)
+        };
+        render(){
+          const { handleChange, handleSubmit, handleSelect } = this
+          return(
+            <div className='center'>
+              <form id='EnrollStudent'>
+                <h3>Enroll New Student</h3>
+                <label>First Name</label>
+                  <input
+                    id='firstName'
+                    onChange={handleChange}
+                  />
+                <label>Last Name</label>
+                  <input
+                    id='lastName'
+                    onChange={handleChange}
+                  />
+                <label>Email</label>
+                  <input
+                    id='email'
+                    onChange={handleChange}
+                  />
+                <label>Current GPA</label>
+                  <input
+                    id='GPA'
+                    onChange={handleChange}
+                  />
+                <select onSelect={handleSelect} id='schoolId'>
+                  {this.props.schools.map( (school) => {
+                    return(
+                      <option key={school.id}>{school.name} </option>
+                    )
+                  })}
+                </select>
+                <button onClick={handleSubmit}>Enroll</button>
+              </form>
+              <hr/>
+              <div>
+                <h3>Enrolled Students</h3>
+                {this.props.students.map( (student) => {
+                  return(
+                    <div key={student.id} className='studentTile'>
+                      <h4>{student.firstName}</h4>
+                      <div> GPA: {student.GPA} </div>
+                      <select defaultOption='switch'>
+                        {this.props.schools.map( (school) => {
+                          return(
+                            <option key={school.id}> {school.name} </option>
+                          )
+                        })}
+                      </select>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        }
+      };
+      const _Students = connect(
+        (state) => ({
+          ...state
+        }),
+        (dispatch)=> ({
+          getStudents: () => dispatch(getStudents()),
+          getSchools: () => dispatch(getSchools())
+        })
+      )(Students)
+
+      const root = document.querySelector('#root');
+      ReactDOM.render(
+        <Provider store={store}>
+          <_App/>
+        </Provider>
+        , root);
+
+    </script>
+  </body>
+</html>

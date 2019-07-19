@@ -1,60 +1,24 @@
 const Sequelize = require('sequelize');
-const dbName = 'wizardSchools';
+const { model } = require('./index')
+
+const dbName = 'wizardSchool';
 const db = new Sequelize(process.env.DATABASE_URL || `postgres:localhost/${dbName}`);
 
-const Students = db.define('student', {
-  id: {
-    primaryKey: true,
-    type: Sequelize.UUID,
-    defaultValue: Sequelize.UUIDV4,
-  },
-  firstName: {
-    type: Sequelize.STRING,
-    allowNull: false
-  },
-  lastName: {
-    type: Sequelize.STRING,
-    allowNull: false
-  },
-  email: {
-    type: Sequelize.STRING,
-     validate: {
-       isEmail: true
-     }
-  },
-  GPA: {
-    type: Sequelize.FLOAT
-  }
-})
+//ASSOCIATIONS//
+model.Schools.hasMany(model.Student)
 
-const Schools = db.define('schools', {
-  id: {
-    type: Sequelize.UUID,
-    defaultValue: Sequelize.UUIDV4,
-    primaryKey: true
-  },
-  name: {
-    type: Sequelize.STRING,
-    allowNull: false
-  },
-  image: {
-    type: Sequelize.STRING
-  }
-})
 
-Schools.hasMany(Students)
-
-//SEED DATA
 syncAndSeed = async() => {
   await db.sync({force:true})
-  await studentsSeed.map((student) => {
-    Students.create(student)
+  studentsSeed.map((student) => {
+    await model.Student.create(student)
   })
-  await schoolsSeed.map((school) => {
-    Schools.create(school)
+  schoolsSeed.map((school) => {
+    await model.School.create(school)
   })
 }
 
+//SEED DATA
 const studentsSeed = [
   {firstName: 'Ron', lastName: 'Weasley', email: 'ronald@scabbers.net', GPA: 3.0},
   {firstName: 'Draco', lastName: 'Malfoy', email: 'draconios@deatheater.net', GPA: 3.5},
@@ -70,11 +34,6 @@ const schoolsSeed = [
 ]
 
 module.exports = {
-  models: {
-    Students,
-    Schools
-  },
-  syncAndSeed,
-  studentsSeed,
-  schoolsSeed
+  db,
+  syncAndSeed
 }
