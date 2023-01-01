@@ -18,6 +18,6 @@
     "react-redux": "^7.1.0",
     "redux": "^4.0.4",
     "sequelize": "^5.10.1",
-    "webpack": "^4.36.1"
+    "webpack": "^5.75.0"
   }
 }
